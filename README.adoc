@@ -1,0 +1,59 @@
+= ASM Maven Plugin
+
+[abstract]
+Simple plugin to remap some sources to another package.
+
+== Coordinates
+
+[source,xml]
+----
+<plugin>
+  <groupId>com.github.rmannibucau</groupId>
+  <artifactId>asm-maven-plugin</artifactId>
+  <version>${plugin.version}</version>
+</plugin>
+----
+
+== Usages (example)
+
+[source,xml]
+----
+<plugin>
+  <groupId>com.github.rmannibucau</groupId>
+  <artifactId>asm-maven-plugin</artifactId>
+  <version>${plugin.version}</version>
+  <executions>
+    <execution>
+      <id>remap</id>
+      <phase>prepare-package</phase>
+      <goals>
+        <goal>process</goal>
+      </goals>
+      <configuration>
+        <attach>true</attach>
+        <classifier>jakartaee</classifier>
+        <mapping>
+          <javax.:all>jakartaee.</javax.:all>
+        </mapping>
+      </configuration>
+    </execution>
+  </executions>
+</plugin>
+----
+
+Will replace all `javax` imports by `jakartaee` ones.
+If you don't develop a final application but a library, it is highly recommended to abuse of the `attach` feature to not break your default bundle and just create a new bundle.
+
+== Configuration
+
+[options="header",cols="1m,1m,10d"]
+|===
+|Name|Default|Description
+|attach|true|Should a jar be created from the rewritten classes. If set to false, the file are modified inline.
+|classifier|remapped|Classifier to use for the rewritten classes artifact.
+|skip|false|Should the mojo be skipped.
+|target|${project.build.directory}/${project.build.finalName}\_asmmojo_work|here to dump the rewritten classes.
+|mapping|user defined|The mapping to take into account. It uses ASM `SimpleRemapper` under the hood and respects its syntax for advanced replacements. However it also supports to end with a `:all` to specify that the key is a prefix and matches any subpackages. Finally all mappings are evaluated while they impact the current entry to be rewritten so you can chain them. For easiness, `/` are also replaced by `.`.
+|===
+
+TIP: all properties can be overriden with `rmannibucau.asm.${name}` properties.
